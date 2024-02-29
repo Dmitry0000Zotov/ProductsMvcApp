@@ -1,0 +1,51 @@
+﻿@model ProductsMvcApp.Domain.ViewModels.ProductListViewModel
+
+@{
+    ViewData["Title"] = "Products Page";
+}
+
+<h2>All Products</h2>
+<form method="get">
+    <div class="form-inline form-group">
+        <div class="row">
+            <div class="col">
+                <input name="name" placeholder="Search by name" class="form-control" />
+            </div>
+            <div class="col">
+                <input type="submit" value="Search" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+</form>
+<table class="table table-sm table-striped table-bordered m-2">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Update</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model.Products)
+        {
+            <tr>
+                <td>@product.Id</td>
+                <td>@product.Name</td>
+                <td>
+                    <a role="button" class="btn btn-sm btn-primary mb-2 mb-sm-2 mb-md-2 mb-lg-2 mb-xl-2 mx-3" onclick="openModal({ id: '@product.Id', url: '/Home/EditProduct', isEdit: true })" data-toggle="ajax-modal" data-target="Modal">
+                        Edit
+                    </a>
+                </td>
+                <td>
+                    <a role="button" class="btn btn-outline-danger mb-2 mb-sm-2 mb-md-2 mb-lg-2 mb-xl-2 mx-3" onclick="openDeleteModal({ id: '@product.Id', url: '/Home/DeleteProduct' })" data-toggle="ajax-modal" data-target="Modal">
+                        Remove    
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a role="button" class="btn btn-sm btn-primary" onclick="openModal({id: null, url: '/Home/EditProduct', isEdit: false})">Add Product</a>
+
+<script src="~/js/modal.js"></script>
