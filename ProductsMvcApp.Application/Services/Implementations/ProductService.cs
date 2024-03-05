@@ -2,7 +2,9 @@
 using ProductsMvcApp.Application.Helpers;
 using ProductsMvcApp.Application.Services.Interfaces;
 using ProductsMvcApp.Domain.Entities;
+using ProductsMvcApp.Domain.Response;
 using ProductsMvcApp.Domain.ViewModels;
+using System.Net;
 using System.Net.Mime;
 using System.Text;
 
@@ -36,26 +38,58 @@ namespace ProductsMvcApp.Application.Services.Implementations
             return await response.ReadContentAsync<Product>();
         }
 
-        public async Task<Guid> CreateProduct(Product product)
+        public async Task<BaseResponse<Guid>> CreateProduct(Product product)
         {
             var content = new MultipartFormDataContent
             {
                 { new StringContent(JsonConvert.SerializeObject(product.Name), Encoding.UTF8, MediaTypeNames.Application.Json), "Name" },
                 { new StringContent(JsonConvert.SerializeObject(product.Description ?? ""), Encoding.UTF8, MediaTypeNames.Application.Json), "Description" }
             };
+            try
+            {
+                var response = await _client.PostAsync(actionApiPath + "CreateProduct", content);
+                var productId = await response.ReadContentAsync<Guid>();
 
-            var response = await _client.PostAsync(actionApiPath + "CreateProduct", content);
-
-            return await response.ReadContentAsync<Guid>();
+                return new BaseResponse<Guid>()
+                {
+                    Data = productId,
+                    StatusCode = response.StatusCode,
+                    Description = $"Function-CreateProduct: End with status code {response.StatusCode}. Message: {response.RequestMessage}"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse<Guid>()
+                {
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Description = $"Function-CreateProduct: End with status code {HttpStatusCode.InternalServerError}. Message: {ex.Message}"
+                };
+            }
         }
 
-        public async Task<Product> UpdateProduct(UpdateProductViewModel product)
+        public async Task<BaseResponse<Product>> UpdateProduct(UpdateProductViewModel product)
         {
             var content = new StringContent(JsonConvert.SerializeObject(product), Encoding.UTF8, MediaTypeNames.Application.Json);
+            try
+            {
+                var response = await _client.PutAsync(actionApiPath + "UpdateProduct", content);
+                var updatedProduct = await response.ReadContentAsync<Product>();
 
-            var response = await _client.PutAsync(actionApiPath + "UpdateProduct", content);
-
-            return await response.ReadContentAsync<Product>();
+                return new BaseResponse<Product>()
+                {
+                    Data = updatedProduct,
+                    StatusCode = response.StatusCode,
+                    Description = $"Function-UpdateProduct: End with status code {response.StatusCode}. Message: {response.RequestMessage}"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse<Product>()
+                {
+                    StatusCode= HttpStatusCode.InternalServerError,
+                    Description = $"Function-UpdateProduct: End with status code {HttpStatusCode.InternalServerError}. Message: {ex.Message}"
+                };
+            }
         }
 
         public async Task<Guid> DeleteProduct(Guid productId)

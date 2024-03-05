@@ -36,12 +36,9 @@
             type: 'POST',
             url: url,
             data: { "product": product },
-            success: function (json) {
+            success: function (response) {
                 modal.modal('hide');
-                if (!json.error) location.reload(true);
-            },
-            failure: function () {
-                alert("failure");
+                if (!response.error) location.reload(true);
             },
             error: function (response) {
                 alert(response.Description);

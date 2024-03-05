@@ -2,6 +2,8 @@
 using ProductsMvcApp.Application.Services.Interfaces;
 using ProductsMvcApp.Domain.Entities;
 using ProductsMvcApp.Domain.ViewModels;
+using ProductsMvcApp.Models;
+using System.Net;
 
 namespace ProductsMvcApp.Controllers
 {
@@ -40,24 +42,47 @@ namespace ProductsMvcApp.Controllers
         [HttpPost]
         public async Task<IActionResult> EditProduct([FromForm] Product product)
         {
-            if (product.Name != null)
+
+            if (product.Id != Guid.Empty)
             {
-                if (product.Id != Guid.Empty)
+                var productVm = new UpdateProductViewModel
                 {
-                    var productVm = new UpdateProductViewModel
-                    {
-                        Id = product.Id,
-                        Name = product.Name,
-                        Description = product.Description ?? ""
-                    };
-                    var result = await _productService.UpdateProduct(productVm);
+                    Id = product.Id,
+                    Name = product.Name,
+                    Description = product.Description ?? ""
+                };
+                var response = await _productService.UpdateProduct(productVm);
+                if(response.StatusCode == HttpStatusCode.OK)
+                {
+                    return RedirectToAction("Index", "Home");
                 }
                 else
                 {
-                    var productId = await _productService.CreateProduct(product);
+                    var error = new ErrorViewModel
+                    {
+                        Description = response.Description,
+                        StatusCode = response.StatusCode
+                    };
+                    return RedirectToAction("Error", error);
                 }
             }
-            return RedirectToAction("Index", "Home");
+            else
+            {
+                var response = await _productService.CreateProduct(product);
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    var error = new ErrorViewModel
+                    {
+                        Description = response.Description,
+                        StatusCode = response.StatusCode
+                    };
+                    return RedirectToAction("Error", error);
+                }
+            }
         }
 
         [HttpGet]
@@ -82,6 +107,17 @@ namespace ProductsMvcApp.Controllers
             }
 
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Error(string Description, HttpStatusCode StatusCode)
+        {
+            var errorVm = new ErrorViewModel()
+            {
+                Description = Description,
+                StatusCode = StatusCode
+            };
+            return View(errorVm);
         }
     }
 }
