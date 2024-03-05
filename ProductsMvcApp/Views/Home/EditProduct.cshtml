@@ -1,23 +1,51 @@
 ﻿@model ProductsMvcApp.Domain.Entities.Product
-
-<form asp-action="EditProduct" enctype="multipart/form-data" id="formEditProduct" method="post">
+<form method="post">
     <input type="hidden" asp-for="Id"/>
-    <div class="mb-3">
-        <label asp-for="@Model.Name" class="col-form-label">Product Name</label>
-        <input asp-for="Name" type="text" class="form-control"/>
-    </div>
-    <div class="mb-5">
-        <label asp-for="@Model.Description" class="col-form-label">Product Description</label>
-        <input asp-for="Description" type="text" class="form-control" />
-    </div>
-    <div class="row justify-content-between">
-        <div class="col-3 justify-content-center">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> 
-        </div>
-        <div class="col-3"></div>
-        <div class="col-3"></div>
-        <div class="col-3 justify-content-center">
-            <input type="submit" class="btn btn-primary" value="Confirm"/>
-        </div>
-    </div>
+     <div class="mb-3">
+         <label asp-for="@Model.Name" class="col-form-label">Product Name</label>
+         <input asp-for="Name" type="text" class="form-control"/>
+     </div>
+     <div class="mb-5">
+         <label asp-for="@Model.Description" class="col-form-label">Product Description</label>
+         <input asp-for="Description" type="text" class="form-control" />
+     </div>
+     <div class="row justify-content-between">
+         <div class="col-3 justify-content-center">
+             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> 
+         </div>
+         <div class="col-3"></div>
+         <div class="col-3"></div>
+         <div class="col-3 justify-content-center">
+            <input type="button" class="btn btn-primary" value="Confirm" onclick="editProduct({ id: Id.value, name: Name.value, description: Description.value, url: '/Home/EditProduct' })" />
+         </div>
+     </div>
 </form>
+
+
+<script>
+    function editProduct(params) {
+        const modal = $('#mainModal');
+        const url = params.url;
+        let product = {
+            Id: params.id,
+            Name: params.name,
+            Description: params.description
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: { "product": product },
+            success: function (json) {
+                modal.modal('hide');
+                if (!json.error) location.reload(true);
+            },
+            failure: function () {
+                alert("failure");
+            },
+            error: function (response) {
+                alert(response.Description);
+            }
+        });
+    };
+</script>
